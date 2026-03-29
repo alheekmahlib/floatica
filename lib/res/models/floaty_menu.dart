@@ -1,3 +1,4 @@
+import 'package:floaty_nav_bar/res/models/floaty_menu_controller.dart';
 import 'package:floaty_nav_bar/res/models/floaty_tab.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,7 @@ class FloatyMenu {
     this.onMenuToggle,
     this.barrierColor = const Color(0x40000000),
     this.barrierBlur = 4.0,
+    this.controller,
   });
 
   /// The widget displayed inside the expanded menu area.
@@ -102,4 +104,15 @@ class FloatyMenu {
   /// Set to `0` and [barrierColor] to [Colors.transparent] to disable the barrier.
   /// Defaults to `4.0`.
   final double barrierBlur;
+
+  /// An optional controller to programmatically open, close, or toggle the menu.
+  ///
+  /// ```dart
+  /// final controller = FloatyMenuController();
+  /// // ...
+  /// controller.open();
+  /// controller.close();
+  /// controller.toggle();
+  /// ```
+  final FloatyMenuController? controller;
 }

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:floaty_nav_bar/res/models/floaty_action_button.dart';
 import 'package:floaty_nav_bar/res/models/floaty_glass_effect.dart';
 import 'package:floaty_nav_bar/res/models/floaty_menu.dart';
+import 'package:floaty_nav_bar/res/models/floaty_menu_controller.dart';
 import 'package:floaty_nav_bar/res/models/floaty_shape.dart';
 import 'package:floaty_nav_bar/res/models/floaty_tab.dart';
 import 'package:floaty_nav_bar/res/utils/context_extension.dart';
@@ -111,6 +112,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
     super.initState();
     _floatyStyle = widget.tabs[widget.selectedTab].floatyActionButton;
     _initMenuController();
+    _attachMenuController();
   }
 
   void _initMenuController() {
@@ -125,6 +127,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
 
   @override
   void dispose() {
+    _detachMenuController();
     _removeBarrierOverlay();
     _menuController?.dispose();
     super.dispose();
@@ -150,6 +153,11 @@ class _FloatyNavBarState extends State<FloatyNavBar>
       _menuController = null;
       if (_isMenuOpen) setState(() => _isMenuOpen = false);
     }
+    // Re-attach controller if it changed
+    if (oldWidget.menu?.controller != widget.menu?.controller) {
+      _detachMenuController(oldWidget.menu?.controller);
+      _attachMenuController();
+    }
   }
 
   void _toggleMenu() {
@@ -160,10 +168,36 @@ class _FloatyNavBarState extends State<FloatyNavBar>
     }
   }
 
+  void _attachMenuController([FloatyMenuController? controller]) {
+    final ctrl = controller ?? widget.menu?.controller;
+    ctrl?.addListener(_onMenuControllerAction);
+  }
+
+  void _detachMenuController([FloatyMenuController? controller]) {
+    final ctrl = controller ?? widget.menu?.controller;
+    ctrl?.removeListener(_onMenuControllerAction);
+  }
+
+  void _onMenuControllerAction() {
+    final ctrl = widget.menu?.controller;
+    if (ctrl == null) return;
+    final action = ctrl.consumeAction();
+    if (action == null) return;
+    switch (action) {
+      case FloatyMenuAction.open:
+        _openMenu();
+      case FloatyMenuAction.close:
+        _closeMenu();
+      case FloatyMenuAction.toggle:
+        _toggleMenu();
+    }
+  }
+
   void _openMenu() {
-    if (_menuController == null || widget.menu == null) return;
+    if (_menuController == null || widget.menu == null || _isMenuOpen) return;
     _menuController!.forward();
     setState(() => _isMenuOpen = true);
+    widget.menu!.controller?.updateIsOpen(true);
     widget.menu!.onMenuToggle?.call(true);
     // Insert barrier after layout so _menuContentKey is measured
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -174,6 +208,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
 
   void _closeMenu() {
     if (_menuController == null || !_isMenuOpen) return;
+    widget.menu!.controller?.updateIsOpen(false);
     widget.menu!.onMenuToggle?.call(false);
     _menuController!.reverse().then((_) {
       _removeBarrierOverlay();
@@ -526,10 +561,11 @@ class _FloatyNavBarState extends State<FloatyNavBar>
   }
 }
 
-/// Transparent overlay positioned above the expanded nav bar for tap-to-dismiss.
+/// Transparent full-screen overlay for tap-to-dismiss.
 ///
 /// Contains no blur or color — visual effects are handled by the [Stack]
 /// overflow barrier inside [_FloatyNavBarState.build].
+/// Tapping anywhere outside the nav bar closes the menu.
 class _DismissOverlayWidget extends StatelessWidget {
   const _DismissOverlayWidget({
     required this.animation,
@@ -551,19 +587,37 @@ class _DismissOverlayWidget extends StatelessWidget {
       animation: animation,
       builder: (context, child) {
         final value = curve.transform(animation.value);
-        final dismissHeight = navBarTop - (menuHeight * value);
-        if (dismissHeight <= 0) return const SizedBox.shrink();
+        if (value == 0) return const SizedBox.shrink();
 
-        return Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            height: dismissHeight,
-            width: double.infinity,
-            child: GestureDetector(
-              onTap: onTap,
-              behavior: HitTestBehavior.opaque,
+        // Full-screen dismiss area above the expanded nav bar
+        final expandedNavBarTop = navBarTop - (menuHeight * value);
+
+        return Stack(
+          children: [
+            // Area above the nav bar (including expanded menu)
+            if (expandedNavBarTop > 0)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: expandedNavBarTop,
+                child: GestureDetector(
+                  onTap: onTap,
+                  behavior: HitTestBehavior.opaque,
+                ),
+              ),
+            // Area beside/below the nav bar (left, right, below)
+            Positioned(
+              top: expandedNavBarTop > 0 ? expandedNavBarTop : 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: onTap,
+                behavior: HitTestBehavior.translucent,
+              ),
             ),
-          ),
+          ],
         );
       },
     );
