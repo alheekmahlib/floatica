@@ -47,7 +47,7 @@
 A highly customizable floating navigation bar for Flutter with glassmorphism effects, expandable menus, per-tab floating action buttons, and iOS 26 Liquid Glass support. Zero external dependencies.
 
 <p align="center">
-  <img src="assets/example.gif" width="300"/>
+<img src="https://raw.githubusercontent.com/alheekmahlib/data/main/packages/floatica/example.gif" width="340"/>
 </p>
 
 ---
@@ -81,7 +81,7 @@ Or
 
 ```yaml
 dependencies:
-  floatica: ^1.0.0+2
+  floatica: ^1.0.0+3
 ```
 
 Then run:
