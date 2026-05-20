@@ -7,22 +7,22 @@ import 'package:flutter/material.dart';
 /// that encapsulate common UI elements and styles.
 extension ContextEx on BuildContext {
   /// Gets the current [ThemeData] associated with the context.
-  ThemeData get _theme => Theme.of(this);
+  ThemeData get theme => Theme.of(this);
 
   /// Gets the [ColorScheme] of the current theme.
-  ColorScheme get _colorScheme => _theme.colorScheme;
+  ColorScheme get colorScheme => theme.colorScheme;
 
   /// The primary color from the current theme's color scheme.
-  Color get primaryColor => _colorScheme.primary;
+  Color get primaryColor => colorScheme.primary;
 
   /// The surface color from the current theme's color scheme.
-  Color get surfaceColor => _colorScheme.surface;
+  Color get surfaceColor => colorScheme.surface;
 
   /// The color used for text or icons displayed on primary color backgrounds.
-  Color get onPrimaryColor => _colorScheme.onPrimary;
+  Color get onPrimaryColor => colorScheme.onPrimary;
 
   /// The color used for text or icons displayed on surface color backgrounds.
-  Color get onSurfaceColor => _colorScheme.onSurface;
+  Color get onSurfaceColor => colorScheme.onSurface;
 
   /// A duration for fast animations, set to 200 milliseconds.
   Duration get fastDuration => const Duration(milliseconds: 200);
@@ -55,7 +55,7 @@ extension ContextEx on BuildContext {
   /// Retrieves the title text style from the current theme's text theme,
   /// copying it and applying a color based on the onPrimary color.
   TextStyle? get titleStyle {
-    return _theme.textTheme.titleMedium?.copyWith(
+    return theme.textTheme.titleMedium?.copyWith(
       color: onPrimaryColor,
       fontSize: 14,
     );

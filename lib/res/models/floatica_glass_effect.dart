@@ -39,6 +39,7 @@ class FloaticaGlassEffect {
     this.saturationBoost = 1.0,
     this.noiseOpacity = 0.0,
     this.variant = LiquidGlassVariant.regular,
+    this.edgeGlowIntensity = 0.0,
   });
 
   /// Creates a dark glass effect preset with gradient.
@@ -66,6 +67,7 @@ class FloaticaGlassEffect {
     this.saturationBoost = 1.0,
     this.noiseOpacity = 0.0,
     this.variant = LiquidGlassVariant.regular,
+    this.edgeGlowIntensity = 0.0,
   });
 
   /// Creates a light glass effect preset with gradient.
@@ -93,16 +95,14 @@ class FloaticaGlassEffect {
     this.saturationBoost = 1.0,
     this.noiseOpacity = 0.0,
     this.variant = LiquidGlassVariant.regular,
+    this.edgeGlowIntensity = 0.0,
   });
 
   /// Creates an iOS 26–style regular Liquid Glass effect.
   ///
-  /// Features a multi-layer blur with specular highlights, inner shadow,
-  /// subtle noise texture, and saturation boost to mimic the dynamic
-  /// Liquid Glass material from iOS 26.
-  ///
-  /// The regular variant blurs and adjusts the luminosity of background content
-  /// to maintain legibility of text and foreground elements.
+  /// Features multi-layer specular highlights, shape-aware edge glow,
+  /// inner shadow, frosted noise texture, and saturation boost to mimic
+  /// the dynamic Liquid Glass material from iOS 26.
   const FloaticaGlassEffect.liquidGlass({
     this.blur = 25.0,
     this.opacity = 0.12,
@@ -129,13 +129,13 @@ class FloaticaGlassEffect {
     this.saturationBoost = 1.3,
     this.noiseOpacity = 0.03,
     this.variant = LiquidGlassVariant.regular,
+    this.edgeGlowIntensity = 0.6,
   });
 
   /// Creates an iOS 26–style clear Liquid Glass effect.
   ///
   /// Highly translucent, ideal for prioritizing the visibility of underlying
-  /// content. Use this for elements that float above media backgrounds
-  /// (photos, videos) to create a more immersive experience.
+  /// content. Use this for elements that float above media backgrounds.
   const FloaticaGlassEffect.liquidGlassClear({
     this.blur = 18.0,
     this.opacity = 0.06,
@@ -162,6 +162,7 @@ class FloaticaGlassEffect {
     this.saturationBoost = 1.15,
     this.noiseOpacity = 0.02,
     this.variant = LiquidGlassVariant.clear,
+    this.edgeGlowIntensity = 0.4,
   });
 
   /// The blur intensity for the glass effect.
@@ -199,32 +200,39 @@ class FloaticaGlassEffect {
 
   /// Whether to enable a specular highlight on the top edge.
   ///
-  /// Simulates light refraction by adding a subtle white gradient
-  /// from the top-left corner, mimicking iOS 26 Liquid Glass.
+  /// Simulates light refraction with multi-layer gradients:
+  /// - Radial top-left glow
+  /// - Top-edge bright bar
+  /// - Left-edge subtle highlight
+  /// - Diagonal bright streak
   final bool specularHighlight;
 
   /// Whether to enable an inner shadow for added depth.
   ///
-  /// Adds a subtle dark gradient around the inner edges to create
-  /// a sense of glass thickness and depth perception.
+  /// Adds dark gradients around the inner edges (top, bottom, sides)
+  /// to create a sense of glass thickness and depth.
   final bool innerShadow;
 
   /// Saturation multiplier for the blurred background content.
   ///
   /// Values > 1.0 boost color saturation (default 1.0 = no change).
-  /// iOS 26 Liquid Glass slightly boosts saturation to make blurred
-  /// background colors more vibrant.
   final double saturationBoost;
 
   /// Opacity of the frosted noise texture overlay (0.0 to 1.0).
   ///
-  /// A very low value (e.g. 0.02–0.05) adds a subtle frosted texture.
-  /// Set to 0.0 to disable.
+  /// A low value (0.02–0.05) adds a subtle frosted texture using a
+  /// grid-based pattern with jitter for an organic look.
   final double noiseOpacity;
 
   /// The Liquid Glass variant (regular or clear).
-  ///
-  /// [LiquidGlassVariant.regular] is more opaque, suitable for text-heavy elements.
-  /// [LiquidGlassVariant.clear] is highly translucent, ideal for media backgrounds.
   final LiquidGlassVariant variant;
+
+  /// Intensity of the edge glow effect (0.0 to 1.0).
+  ///
+  /// Controls the brightness of the luminous edge glow that follows the
+  /// border radius shape. iOS 26 Liquid Glass has a distinctive bright edge,
+  /// especially on the top half, simulating light refraction through glass.
+  ///
+  /// Set to 0.0 to disable. Typical values: 0.3–0.7.
+  final double edgeGlowIntensity;
 }

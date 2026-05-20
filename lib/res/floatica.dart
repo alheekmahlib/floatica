@@ -10,6 +10,7 @@ import 'package:floatica/res/widgets/floatica_tab_widget.dart';
 import 'package:floatica/res/widgets/gap_box.dart';
 import 'package:floatica/res/widgets/liquid_glass_container.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// A customizable floating navigation bar that displays tabs and an action button.
 ///
@@ -197,6 +198,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
     widget.menu!.onMenuToggle?.call(true);
     // Insert barrier after layout so _menuContentKey is measured
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return; // ← Fix: guard against unmounted widget
       _measureMenuHeight();
       _insertBarrierOverlay();
     });
@@ -214,7 +216,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
 
   void _insertBarrierOverlay() {
     final menu = widget.menu;
-    if (menu == null) return;
+    if (menu == null || !mounted) return;
 
     final renderBox =
         _navBarKey.currentContext?.findRenderObject() as RenderBox?;
@@ -251,9 +253,19 @@ class _FloatyNavBarState extends State<FloatyNavBar>
   }
 
   void _removeBarrierOverlay() {
-    _barrierOverlay?.remove();
-    _barrierOverlay?.dispose();
-    _barrierOverlay = null;
+    if (_barrierOverlay != null) {
+      try {
+        _barrierOverlay!.remove();
+      } catch (_) {
+        // Overlay may have already been removed
+      }
+      try {
+        _barrierOverlay!.dispose();
+      } catch (_) {
+        // Overlay may have already been disposed
+      }
+      _barrierOverlay = null;
+    }
   }
 
   @override
@@ -308,45 +320,54 @@ class _FloatyNavBarState extends State<FloatyNavBar>
 
     if (showBarrier) {
       final screenHeight = MediaQuery.of(context).size.height;
-      result = Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Barrier: first child paints first → behind the nav bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: screenHeight,
-            child: IgnorePointer(
-              child: AnimatedBuilder(
-                animation: _menuController!,
-                builder: (context, child) {
-                  final curve = menu.animationCurve ?? Curves.easeOutCubic;
-                  final value = curve.transform(_menuController!.value);
-                  if (value == 0) return const SizedBox.shrink();
+      final screenWidth = MediaQuery.of(context).size.width;
+      result = SizedBox(
+        width: screenWidth,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Barrier: first child paints first → behind the nav bar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: screenHeight,
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _menuController!,
+                  builder: (context, child) {
+                    final curve =
+                        menu.animationCurve ?? Curves.easeOutCubic;
+                    final value = curve.transform(_menuController!.value);
+                    if (value == 0) return const SizedBox.shrink();
 
-                  Widget barrier = ColoredBox(
-                    color: menu.barrierColor.withValues(
-                      alpha: menu.barrierColor.a * value,
-                    ),
-                  );
-
-                  if (menu.barrierBlur > 0) {
-                    final sigma = menu.barrierBlur * value;
-                    barrier = BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-                      child: barrier,
+                    Widget barrier = ColoredBox(
+                      color: menu.barrierColor.withValues(
+                        alpha: menu.barrierColor.a * value,
+                      ),
                     );
-                  }
 
-                  return ClipRect(child: barrier);
-                },
+                    if (menu.barrierBlur > 0) {
+                      final sigma = menu.barrierBlur * value;
+                      barrier = BackdropFilter(
+                        filter:
+                            ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+                        child: barrier,
+                      );
+                    }
+
+                    return ClipRect(child: barrier);
+                  },
+                ),
               ),
             ),
-          ),
-          // Nav bar: second child paints on top → NOT blurred
-          result,
-        ],
+            // Nav bar: second child paints on top → NOT blurred
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: result,
+            ),
+          ],
+        ),
       );
     }
 
@@ -435,16 +456,17 @@ class _FloatyNavBarState extends State<FloatyNavBar>
   ///
   /// When a [FloaticaMenu] is configured, the container expands upward to
   /// reveal the menu grid above the tabs row using a [SizeTransition].
+  ///
+  /// Tabs automatically shrink via [FittedBox] when they exceed available width,
+  /// preventing overflow on small screens with many tabs.
   Widget _buildNavBarContainer(BuildContext context) {
     final tabWidgets = widget.tabs.map((tab) {
       // When menu is open, deselect all regular tabs
       final effectiveTab = _isMenuOpen ? tab.copyWith(isSelected: false) : tab;
-      return Flexible(
-        child: FloaticaTabWidget(
-          floaticaTab: effectiveTab,
-          borderRadius: widget.borderRadius,
-          glassEffect: widget.glassEffect,
-        ),
+      return FloaticaTabWidget(
+        floaticaTab: effectiveTab,
+        borderRadius: widget.borderRadius,
+        glassEffect: widget.glassEffect,
       );
     }).toList();
 
@@ -467,21 +489,20 @@ class _FloatyNavBarState extends State<FloatyNavBar>
         margin: menu.margin,
       );
       tabWidgets.add(
-        Flexible(
-          child: FloaticaTabWidget(
-            floaticaTab: menuTab,
-            borderRadius: widget.borderRadius,
-            glassEffect: widget.glassEffect,
-          ),
+        FloaticaTabWidget(
+          floaticaTab: menuTab,
+          borderRadius: widget.borderRadius,
+          glassEffect: widget.glassEffect,
         ),
       );
     }
 
+    // Use FittedBox to auto-shrink tabs when they exceed available width.
+    // This prevents overflow on small screens with many tabs.
     final tabsRow = SizedBox(
       height: widget.height,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const NeverScrollableScrollPhysics(),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -495,25 +516,38 @@ class _FloatyNavBarState extends State<FloatyNavBar>
     final hasMenu = widget.menu != null && _menuController != null;
     final animCurve = widget.menu?.animationCurve ?? Curves.easeOutCubic;
 
+    // Only include SizeTransition when menu is active (open or animating).
+    // When idle at sizeFactor=0, SizeTransition still reports the menu child's
+    // full intrinsic width, which defeats IntrinsicWidth sizing on the container.
+    final showMenuTransition =
+        hasMenu && (_isMenuOpen || _menuController!.isAnimating);
+
     final content = Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (hasMenu)
-          SizeTransition(
-            sizeFactor: CurvedAnimation(
-              parent: _menuController!,
-              curve: animCurve,
-              reverseCurve: animCurve.flipped,
-            ),
-            axisAlignment: 1.0, // Expand upward, bottom stays fixed
-            child: KeyedSubtree(
-              key: _menuContentKey,
-              child: widget.menu!.height != null
-                  ? SizedBox(
-                      height: widget.menu!.height,
-                      child: widget.menu!.child,
-                    )
-                  : widget.menu!.child,
+        if (showMenuTransition)
+          // Wrap in _ZeroIntrinsicWidth so IntrinsicWidth sizing ignores
+          // the menu's wide content — the Column width is determined by
+          // the tabs row only. CrossAxisAlignment.stretch then forces the
+          // menu to that same width so its Wrap items reflow to fit.
+          _ZeroIntrinsicWidth(
+            child: SizeTransition(
+              sizeFactor: CurvedAnimation(
+                parent: _menuController!,
+                curve: animCurve,
+                reverseCurve: animCurve.flipped,
+              ),
+              axisAlignment: 1.0, // Expand upward, bottom stays fixed
+              child: KeyedSubtree(
+                key: _menuContentKey,
+                child: widget.menu!.height != null
+                    ? SizedBox(
+                        height: widget.menu!.height,
+                        child: widget.menu!.child,
+                      )
+                    : widget.menu!.child,
+              ),
             ),
           ),
         Padding(
@@ -523,28 +557,91 @@ class _FloatyNavBarState extends State<FloatyNavBar>
       ],
     );
 
-    // Apply glass effect if configured
     if (widget.glassEffect != null) {
       final glassEffect = widget.glassEffect!;
       final borderRadius = widget.borderRadius;
 
-      return LiquidGlassContainer(
-        glassEffect: glassEffect,
-        borderRadius: borderRadius,
-        child: content,
+      return IntrinsicWidth(
+        child: LiquidGlassContainer(
+          glassEffect: glassEffect,
+          borderRadius: borderRadius,
+          child: content,
+        ),
       );
     }
 
     // Default container without glass effect
     final borderRadius = widget.borderRadius;
-    return Container(
-      decoration: BoxDecoration(
-        color: widget.backgroundColor ?? context.surfaceColor,
-        borderRadius: borderRadius,
-        boxShadow: widget.boxShadow ?? [context.boxShadow],
+    return IntrinsicWidth(
+      child: Container(
+        decoration: BoxDecoration(
+          color: widget.backgroundColor ?? context.surfaceColor,
+          borderRadius: borderRadius,
+          boxShadow: widget.boxShadow ?? [context.boxShadow],
+        ),
+        child: content,
       ),
-      child: content,
     );
+  }
+}
+
+/// A widget that forces its child to report zero intrinsic width.
+///
+/// Used inside an [IntrinsicWidth] + [Column] with [CrossAxisAlignment.stretch]
+/// to prevent a wide child (like a menu grid) from inflating the column width.
+/// The child still renders at whatever width the column gives it via stretch.
+class _ZeroIntrinsicWidth extends SingleChildRenderObjectWidget {
+  const _ZeroIntrinsicWidth({required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderZeroIntrinsicWidth();
+  }
+}
+
+class _RenderZeroIntrinsicWidth extends RenderBox
+    with RenderObjectWithChildMixin<RenderBox> {
+  @override
+  double computeMinIntrinsicWidth(double height) => 0;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => 0;
+
+  @override
+  void performLayout() {
+    if (child != null) {
+      child!.layout(constraints, parentUsesSize: true);
+      size = child!.size;
+    } else {
+      size = computeDryLayout(constraints);
+    }
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return child?.getDryLayout(constraints) ?? Size.zero;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return child?.getMinIntrinsicHeight(width) ?? 0;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return child?.getMaxIntrinsicHeight(width) ?? 0;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (child != null) {
+      context.paintChild(child!, offset);
+    }
+  }
+
+  @override
+  bool hitTestChildren(HitTestResult result, {required Offset position}) {
+    return false;
   }
 }
 

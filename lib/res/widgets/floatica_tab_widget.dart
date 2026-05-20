@@ -111,11 +111,14 @@ class FloaticaTabWidget extends StatelessWidget {
     final isSelected = floaticaTab.isSelected;
     final indicatorStyle = floaticaTab.indicatorStyle;
 
-    // For non-background indicator styles, don't fill the background when selected
+    // For non-background indicator styles, use selected color only on selected tab
     if (indicatorStyle != FloaticaIndicatorStyle.background &&
         indicatorStyle != FloaticaIndicatorStyle.none) {
       return ShapeDecoration(
-        color: floaticaTab.unselectedColor ?? context.surfaceColor,
+        color: isSelected
+            ? (floaticaTab.selectedColor ?? context.primaryColor)
+                .withValues(alpha: 0.15) // Subtle highlight for selected state
+            : floaticaTab.unselectedColor ?? Colors.transparent,
         shape: _buildShapeBorder(context),
       );
     }
@@ -286,7 +289,7 @@ class FloaticaTabWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: iconWidget),
+          iconWidget, // ← Fix: removed Expanded to avoid layout issues
           titleWidget,
           indicator,
         ],
@@ -341,6 +344,7 @@ class FloaticaTabWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Build content once — reuse for both glass and non-glass paths
     final content = _buildContent(context);
 
     // Wrap content with FittedBox if width or height is specified
@@ -353,44 +357,52 @@ class FloaticaTabWidget extends StatelessWidget {
           )
         : content;
 
+    final tabPadding = EdgeInsets.symmetric(
+      horizontal: floaticaTab.isSelected ? 14 : 18,
+      vertical:
+          floaticaTab.labelPosition == FloaticaLabelPosition.bottom ? 2 : 10,
+    );
+
+    // Apply glass effect if configured
+    if (_effectiveGlassEffect != null) {
+      Widget tabContent = _wrapWithGlassEffect(
+        context,
+        Container(
+          width: floaticaTab.width,
+          height: floaticaTab.height,
+          padding: tabPadding,
+          child: wrappedContent, // ← Fix: reuse same content, not built twice
+        ),
+      );
+
+      if (floaticaTab.tooltip != null) {
+        tabContent = Tooltip(
+          message: floaticaTab.tooltip!,
+          child: tabContent,
+        );
+      }
+
+      return Padding(
+        padding: floaticaTab.margin,
+        child: CupertinoButton(
+          onPressed: _handleTap,
+          padding: EdgeInsets.zero,
+          focusColor: floaticaTab.selectedColor ?? context.primaryColor,
+          child: tabContent,
+        ),
+      );
+    }
+
+    // Default path: no glass effect
     Widget tabContent = AnimatedContainer(
       duration: _getAnimationDuration(context),
       curve: _getAnimationCurve(),
       width: floaticaTab.width,
       height: floaticaTab.height,
-      padding: EdgeInsets.symmetric(
-        horizontal: floaticaTab.isSelected ? 14 : 18,
-        vertical:
-            floaticaTab.labelPosition == FloaticaLabelPosition.bottom ? 2 : 10,
-      ),
+      padding: tabPadding,
       decoration: _buildDecoration(context),
       child: wrappedContent,
     );
-
-    // Apply glass effect if configured
-    if (_effectiveGlassEffect != null) {
-      final glassContent = hasFixedSize
-          ? FittedBox(
-              fit: BoxFit.scaleDown,
-              child: _buildContent(context),
-            )
-          : _buildContent(context);
-
-      tabContent = _wrapWithGlassEffect(
-        context,
-        Container(
-          width: floaticaTab.width,
-          height: floaticaTab.height,
-          padding: EdgeInsets.symmetric(
-            horizontal: floaticaTab.isSelected ? 14 : 18,
-            vertical: floaticaTab.labelPosition == FloaticaLabelPosition.bottom
-                ? 2
-                : 10,
-          ),
-          child: glassContent,
-        ),
-      );
-    }
 
     // Wrap with tooltip if provided
     if (floaticaTab.tooltip != null) {

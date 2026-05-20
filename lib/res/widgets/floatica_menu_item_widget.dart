@@ -1,4 +1,4 @@
-import 'package:floatica/res/models/flloatica_menu_item.dart';
+import 'package:floatica/res/models/floatica_menu_item.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that renders a single [FloaticaMenuItem] in the menu grid.

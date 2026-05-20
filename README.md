@@ -75,7 +75,7 @@ A highly customizable floating navigation bar for Flutter with glassmorphism eff
 Add `floatica` to your `pubspec.yaml`:
 
 ```
-flutter pub add flexible_sheet
+flutter pub add floatica
 ```
 Or
 

@@ -147,24 +147,26 @@ class _MyHomePageState extends State<MyHomePage> {
               labelPosition: FloaticaLabelPosition.bottom,
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildMenuItem(
-                        Icons.description_outlined, Colors.blue, 'Docs'),
-                    _buildMenuItem(
-                        Icons.videocam_outlined, Colors.purple, 'Clips'),
-                    _buildMenuItem(
-                        Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
-                    _buildMenuItem(
-                        Icons.note_alt_outlined, Colors.teal, 'Notepad'),
-                    _buildMenuItem(
-                        Icons.event_outlined, Colors.green, 'Planner'),
-                    _buildMenuItem(
-                        Icons.chat_bubble_outline, Colors.pink, 'Chats'),
-                  ],
+                child: Center(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildMenuItem(
+                          Icons.description_outlined, Colors.blue, 'Docs'),
+                      _buildMenuItem(
+                          Icons.videocam_outlined, Colors.purple, 'Clips'),
+                      _buildMenuItem(
+                          Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
+                      _buildMenuItem(
+                          Icons.note_alt_outlined, Colors.teal, 'Notepad'),
+                      _buildMenuItem(
+                          Icons.event_outlined, Colors.green, 'Planner'),
+                      _buildMenuItem(
+                          Icons.chat_bubble_outline, Colors.pink, 'Chats'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -285,24 +287,26 @@ class _MyHomePageState extends State<MyHomePage> {
               labelPosition: FloaticaLabelPosition.bottom,
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildMenuItem(
-                        Icons.description_outlined, Colors.blue, 'Docs'),
-                    _buildMenuItem(
-                        Icons.videocam_outlined, Colors.purple, 'Clips'),
-                    _buildMenuItem(
-                        Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
-                    _buildMenuItem(
-                        Icons.note_alt_outlined, Colors.teal, 'Notepad'),
-                    _buildMenuItem(
-                        Icons.event_outlined, Colors.green, 'Planner'),
-                    _buildMenuItem(
-                        Icons.chat_bubble_outline, Colors.pink, 'Chats'),
-                  ],
+                child: Center(
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildMenuItem(
+                          Icons.description_outlined, Colors.blue, 'Docs'),
+                      _buildMenuItem(
+                          Icons.videocam_outlined, Colors.purple, 'Clips'),
+                      _buildMenuItem(
+                          Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
+                      _buildMenuItem(
+                          Icons.note_alt_outlined, Colors.teal, 'Notepad'),
+                      _buildMenuItem(
+                          Icons.event_outlined, Colors.green, 'Planner'),
+                      _buildMenuItem(
+                          Icons.chat_bubble_outline, Colors.pink, 'Chats'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -422,24 +426,26 @@ class _MyHomePageState extends State<MyHomePage> {
               labelPosition: FloaticaLabelPosition.bottom,
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildMenuItem(
-                        Icons.description_outlined, Colors.blue, 'Docs'),
-                    _buildMenuItem(
-                        Icons.videocam_outlined, Colors.purple, 'Clips'),
-                    _buildMenuItem(
-                        Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
-                    _buildMenuItem(
-                        Icons.note_alt_outlined, Colors.teal, 'Notepad'),
-                    _buildMenuItem(
-                        Icons.event_outlined, Colors.green, 'Planner'),
-                    _buildMenuItem(
-                        Icons.chat_bubble_outline, Colors.pink, 'Chats'),
-                  ],
+                child: Center(
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildMenuItem(
+                          Icons.description_outlined, Colors.blue, 'Docs'),
+                      _buildMenuItem(
+                          Icons.videocam_outlined, Colors.purple, 'Clips'),
+                      _buildMenuItem(
+                          Icons.dashboard_outlined, Colors.orange, 'Dashboard'),
+                      _buildMenuItem(
+                          Icons.note_alt_outlined, Colors.teal, 'Notepad'),
+                      _buildMenuItem(
+                          Icons.event_outlined, Colors.green, 'Planner'),
+                      _buildMenuItem(
+                          Icons.chat_bubble_outline, Colors.pink, 'Chats'),
+                    ],
+                  ),
                 ),
               ),
             ),
