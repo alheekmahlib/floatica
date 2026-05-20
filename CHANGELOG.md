@@ -1,3 +1,20 @@
+## 1.2.0
+
+* **FEAT:**
+	* Liquid Glass effect overhaul — significantly closer to iOS 26 Liquid Glass:
+		* Multi-layer specular highlights (radial glow, top-edge bar, left-edge highlight, diagonal streak, bottom-right warm glow).
+		* Shape-aware edge glow following border radius (outer glow, inner highlight, corner accent) with `edgeGlowIntensity` parameter.
+		* Improved frosted noise texture — grid-based with jitter for organic look (bright + dark dots mix).
+		* Four-edge inner shadows (top, bottom, left, right) for realistic glass depth.
+		* Multi-layer luminosity-aware border (main gradient + inner accent).
+	* Nav bar now sizes to its content width instead of expanding to full screen width.
+	* Menu expands to match nav bar width (content reflows via `Wrap`).
+
+* **FIX:**
+	* Fix barrier overlay not covering full screen when nav bar uses intrinsic sizing.
+	* Fix nav bar shifting left when menu opens with barrier.
+	* Fix menu items not receiving tap events due to `hitTestChildren` returning `false`.
+
 ## 1.1.0
 
 * **FIX:**

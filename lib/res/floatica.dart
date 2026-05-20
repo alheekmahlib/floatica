@@ -640,8 +640,8 @@ class _RenderZeroIntrinsicWidth extends RenderBox
   }
 
   @override
-  bool hitTestChildren(HitTestResult result, {required Offset position}) {
-    return false;
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return child?.hitTest(result, position: position) ?? false;
   }
 }
 
