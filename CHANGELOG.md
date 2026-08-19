@@ -1,3 +1,9 @@
+## 1.2.1
+
+* **FIX:** Menu state desync and leaked dismiss barrier:
+	* `_openMenu`/`_closeMenu` early-return guards now re-sync `FloaticaMenuController.isOpen` instead of leaving it stale, which previously made subsequent `close()` calls no-ops (menu stayed open forever).
+	* Opening the menu now removes any stale barrier left over from an interrupted close animation, so orphaned full-screen barriers can no longer swallow taps (e.g. dead back button on a pushed route while edge-swipe still worked).
+
 ## 1.2.0
 
 * **FEAT:**
