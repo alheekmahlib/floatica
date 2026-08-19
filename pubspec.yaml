@@ -2,6 +2,7 @@ name: floatica
 description: "A customizable floating navigation bar for Flutter with glassmorphism, expandable menus, per-tab FABs, and Liquid Glass support."
 version: 1.2.1
 homepage: https://github.com/alheekmahlib/floatica
+documentation: https://floatica.vexaltech.dev/
 
 environment:
   sdk: ^3.5.3

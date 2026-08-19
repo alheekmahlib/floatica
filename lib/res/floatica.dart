@@ -553,7 +553,7 @@ class _FloatyNavBarState extends State<FloatyNavBar>
                 curve: animCurve,
                 reverseCurve: animCurve.flipped,
               ),
-              axisAlignment: 1.0, // Expand upward, bottom stays fixed
+              alignment: const AlignmentDirectional(-1.0, 1.0), // Expand upward, bottom stays fixed
               child: KeyedSubtree(
                 key: _menuContentKey,
                 child: widget.menu!.height != null
