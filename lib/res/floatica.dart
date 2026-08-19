@@ -191,7 +191,15 @@ class _FloatyNavBarState extends State<FloatyNavBar>
   }
 
   void _openMenu() {
-    if (_menuController == null || widget.menu == null || _isMenuOpen) return;
+    if (_menuController == null || widget.menu == null) return;
+    if (_isMenuOpen) {
+      // مزامنة حالة المتحكم: قد تنفك بعد إغلاق قُوطع أنيميشنه وأُعيد الفتح سريعًا
+      widget.menu!.controller?.updateIsOpen(true);
+      return;
+    }
+    // تنظيف أي حاجز (barrier) تَيَّم من دورة إغلاق سابقة قُوطع أنيميشنها،
+    // وإلا بقي فوق الشاشة يبتلع النقرات
+    _removeBarrierOverlay();
     _menuController!.forward();
     setState(() => _isMenuOpen = true);
     widget.menu!.controller?.updateIsOpen(true);
@@ -205,7 +213,14 @@ class _FloatyNavBarState extends State<FloatyNavBar>
   }
 
   void _closeMenu() {
-    if (_menuController == null || !_isMenuOpen) return;
+    if (_menuController == null) return;
+    if (!_isMenuOpen) {
+      // مزامنة حالة المتحكم + تنظيف أي حاجز متروك حتى لا تنعلل isOpen
+      // ويبقى الحاجز يبتلع النقرات في الزيارات التالية
+      widget.menu?.controller?.updateIsOpen(false);
+      _removeBarrierOverlay();
+      return;
+    }
     widget.menu!.controller?.updateIsOpen(false);
     widget.menu!.onMenuToggle?.call(false);
     _menuController!.reverse().then((_) {
